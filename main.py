@@ -116,7 +116,7 @@ def change(book: AddressBook, contact: str, phone: str = None):
         if len(rec.phones) == 1:
             num = 1
         if len(rec.phones) > 1:
-            num = int(input("which one do yo want to change (enter index):"))
+            num = int(input("which one do you want to change (enter index):"))
         if not phone:
             phone_new = Phone(input("Please enter new phone number:"))
         else:
