@@ -26,9 +26,11 @@ def input_error(func):
             return err
 
         except AttributeError:
-            return "enter contact name or the contact doesn't exist"
+            return 'No such contact! to add one use "add" command'
 
         except ValueError as err:
+            if func.__name__ == "phone":
+                return "Enter contact name"
             return err
 
         except IndexError as err:

@@ -31,7 +31,8 @@ class Name(Field):
             self.__value = value
         else:
             raise ValueError(
-                "Name cannot consist of only digits and min name length is 3."
+                "Name cannot consist of only \
+                            digits and min name length is 3."
             )
 
 
@@ -90,7 +91,8 @@ class Phone(Field):
             or not Phone.min_len <= len(new_phone) <= Phone.max_len
         ):
             raise ValueError(
-                f" Minimum phone number length is {Phone.min_len} digits. Maximum {Phone.max_len}.Letters not allowed!"
+                f"Give me name and phone please. Minimum phone number length is\
+                {Phone.min_len} digits. Maximum {Phone.max_len}.Letters not allowed!"
             )
         self.__value = new_phone
 
@@ -217,7 +219,7 @@ class AddressBook(UserDict):
         for contact in self.data.values():
             output += str(contact)
         output += f"Total: {len(self.data)} contacts."
-        return output if output else "Phonebook is empty"
+        return output
 
     def search(self, pattern: str) -> list:
         found_recs = []

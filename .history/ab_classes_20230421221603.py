@@ -217,7 +217,7 @@ class AddressBook(UserDict):
         for contact in self.data.values():
             output += str(contact)
         output += f"Total: {len(self.data)} contacts."
-        return output if output else "Phonebook is empty"
+        return output
 
     def search(self, pattern: str) -> list:
         found_recs = []

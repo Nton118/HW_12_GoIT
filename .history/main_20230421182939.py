@@ -15,30 +15,47 @@ def input_error(func):
             result = func(*args)
             return result
 
-        except TypeError as err:
+        except TypeError:
             if func.__name__ == "add" or func.__name__ == "change":
-                message = "Give me name and phone please. Minimum phone number length is {} digits. Maximum {}.Letters not allowed!"
+                message = "Give me name and phone please. Minimum phone number length\
+                    is {} digits. Maximum {}.Letters not allowed!"
                 return message.format(Phone.min_len, Phone.max_len)
             if func.__name__ == "add_birthday":
                 return "input name and date"
             if func.__name__ == "add_email":
                 return "input name and e-mail"
-            return err
+            if func.__name__ == "search":
+                return "Command needs only 1 argument"
 
         except AttributeError:
-            return "enter contact name or the contact doesn't exist"
+            return 'No such contact! to add one use "add" command'
 
         except ValueError as err:
+            if func.__name__ == "add" or func.__name__ == "change":
+                return "Name cannot consist of only digits and min name length is 3."
+            if func.__name__ == "phone":
+                return "Enter contact name"
+            if func.__name__ == "show_all":
+                return "The Phonebook is empty"
+            if func.__name__ == "del_phone":
+                return "this contact doesn't have such phone number"
+            if func.__name__ == "add_birthday":
+                return "use date format DD.MM.YYYY or DD/MM/YYYY"
+            if func.__name__ == "add_email":
+                return "invalid email format"
             return err
 
-        except IndexError as err:
-            return err
+        except IndexError:
+            if func.__name__ == "add_birthday":
+                return "Birth date lready entered, only one allowed"
 
     return wrapper
 
 
 @input_error
-def greet(*args):
+def greet(book: AddressBook = None, *args):
+    if args != ("",):
+        raise IndexError
     return "How can I help you?"
 
 
@@ -73,8 +90,7 @@ def add_birthday(book: AddressBook, contact: str, birthday: str):
 
 
 @input_error
-def congrat(book: AddressBook, *args):
-    contact = " ".join(args)
+def congrat(book: AddressBook, contact: str):
     rec = book.get(contact)
     return rec.days_to_birthday()
 
@@ -83,7 +99,7 @@ def congrat(book: AddressBook, *args):
 def change(book: AddressBook, contact: str, phone: str = None):
     rec = book.get(contact)
 
-    print(rec.show_phones())
+    print(rec.show_phones)
 
     if not rec.phones:
         if not phone:
@@ -118,7 +134,7 @@ def del_phone(book: AddressBook, contact: str, phone=None):
             if p == phone:
                 num = i + 1
         else:
-            raise ValueError("this contact doesn't have such phone number")
+            raise ValueError
     else:
         print(rec.show_phones())
         if len(rec.phones) == 1:
@@ -135,16 +151,14 @@ def del_phone(book: AddressBook, contact: str, phone=None):
 
 
 @input_error
-def del_email(book: AddressBook, *args):
-    contact = " ".join(args)
+def del_email(book: AddressBook, contact: str, email=None):
     rec = book.get(contact)
     rec.email = None
     return f"Contact {contact}, email deleted"
 
 
 @input_error
-def del_contact(book: AddressBook, *args):
-    contact = " ".join(args)
+def del_contact(book: AddressBook, contact: str):
     rec = book.get(contact)
     if not rec:
         raise AttributeError
@@ -155,18 +169,15 @@ def del_contact(book: AddressBook, *args):
 
 
 @input_error
-def del_birthday(book: AddressBook, *args):
-    contact = " ".join(args)
+def del_birthday(book: AddressBook, contact: str):
     rec = book.get(contact)
     rec.birthday = None
     return f"Contact {contact}, birthday deleted"
 
 
 @input_error
-def phone(book: AddressBook, *args):
-    contact = " ".join(args)
-    rec = book.get(contact)
-    return f'Contact "{contact}". {rec.show_phones()}'
+def phone(book: AddressBook, contact: str):
+    return f'Contact "{contact}". {book.show_phone(contact)}'
 
 
 @input_error
@@ -182,23 +193,23 @@ def show_all(book: AddressBook, *args):
 
 
 @input_error
-def search(book: AddressBook, *args):
-    pattern = " ".join(args)
+def search(book: AddressBook, pattern: str):
     if len(pattern) < 3:
         return "search string length >= 3"
     result = book.search(pattern)
-    if not result:
+    if result:
+        matches = ""
+        for i in result:
+            matches += str(i)
+        frags = matches.split(pattern)
+        highlighted = ""
+        for i, fragment in enumerate(frags):
+            highlighted += fragment
+            if i < len(frags) - 1:
+                highlighted += "\033[42m" + pattern + "\033[0m"
+        return f"Found {len(result)} match(es):\n" + highlighted
+    else:
         return "not found!"
-    matches = ""
-    for i in result:
-        matches += str(i)
-    frags = matches.split(pattern)
-    highlighted = ""
-    for i, fragment in enumerate(frags):
-        highlighted += fragment
-        if i < len(frags) - 1:
-            highlighted += "\033[42m" + pattern + "\033[0m"
-    return f"Found {len(result)} match(es):\n" + highlighted
 
 
 @input_error

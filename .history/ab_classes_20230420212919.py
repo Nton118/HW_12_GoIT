@@ -30,9 +30,7 @@ class Name(Field):
         if not (value.isnumeric() or len(value) < 3):  # Name validation
             self.__value = value
         else:
-            raise ValueError(
-                "Name cannot consist of only digits and min name length is 3."
-            )
+            raise ValueError
 
 
 class Birthday(Field):
@@ -44,9 +42,8 @@ class Birthday(Field):
     def value(self, value):
         try:
             self.__value = datetime.strptime(value, "%d.%m.%Y")  # Date validaiton "."
-            self.__value = datetime.strptime(value, "%d/%m/%Y")  # Date validaiton "/"
         except ValueError:
-            return "use date format DD.MM.YYYY or DD/MM/YYYY"
+            self.__value = datetime.strptime(value, "%d/%m/%Y")  # Date validaiton "/"
 
     def __str__(self) -> str:
         return datetime.strftime(self.value, "%d.%m.%Y")
@@ -65,7 +62,7 @@ class Email(Field):
         if re.match(pattern, value):
             self.__value = value
         else:
-            raise ValueError("invalid email format")
+            raise ValueError
 
 
 class Phone(Field):
@@ -89,9 +86,7 @@ class Phone(Field):
             not new_phone.isdecimal()
             or not Phone.min_len <= len(new_phone) <= Phone.max_len
         ):
-            raise ValueError(
-                f" Minimum phone number length is {Phone.min_len} digits. Maximum {Phone.max_len}.Letters not allowed!"
-            )
+            raise TypeError
         self.__value = new_phone
 
 
@@ -111,47 +106,28 @@ class Record:
         self.email = email
 
     def __str__(self):
-        line = "{}: Phones: {}; E-mail: {}; B-day: {} \n"
-        return line.format(
-            self.name,
-            ", ".join([str(phone) for phone in self.phones]),
-            self.email,
-            self.birthday,
-        )
+        return f"{self.name}: Phones: {', '.join([str(phone) for phone in self.phones])}; E-mail:{self.email}; B-day:{self.birthday} \n"
 
     def __repr__(self):
-        line = "{}: Phones: {}; E-mail: {}; B-day: {} \n"
-        return line.format(
-            self.name,
-            ", ".join([str(phone) for phone in self.phones]),
-            self.email,
-            self.birthday,
-        )
+        return f"{self.name}: Phones: {', '.join([str(phone) for phone in self.phones])}; \E-mail:{self.email}; B-day:{self.birthday} \n"
 
     def days_to_birthday(self) -> int:
         if not self.birthday:
             return "Sorry, no birthdate for this contact"
         today = datetime.today()
         compare = self.birthday.value.replace(year=today.year)
-        days = int((compare - today).days)
-        if days > 0:
-            return f"{days} days to birthday"
+        if int((compare - today).days) > 0:
+            return f"{int((compare - today).days)} days to birthday"
         elif today.month == compare.month and today.day == compare.day:
             return "It is TODAY!!!"
         else:
-            days = int((compare.replace(year=today.year + 1) - today).days)
-            return f"{days} days to birthday"
-
-    def add_email(self, email: Email):
-        if not self.email:
-            self.email = email
-        else:
-            raise IndexError("E-mail already entered")
+            return f"{int((compare.replace(year=today.year+1) - today).days)} days to birthday"
 
     def add_phone(self, phone: Phone):
-        if phone in self.phones:
-            raise IndexError("This phone number already exists")
         self.phones.append(phone)
+
+    def add_email(self, email: Email):
+        self.email = email
 
     def add_birthday(self, birthday: Birthday):
         if not self.birthday:
@@ -172,13 +148,13 @@ class Record:
 
     def del_phone(self, num=1):
         if not self.phones:
-            raise IndexError("this contact has no phones saved")
+            raise IndexError
         else:
             return self.phones.pop(num - 1)
 
     def edit_phone(self, phone_new: Phone, num=1):
         if not self.phones:
-            raise IndexError("this contact has no phones saved")
+            raise IndexError
         else:
             self.phones.pop(num - 1)
             self.phones.insert(num - 1, phone_new)
@@ -199,6 +175,9 @@ class AddressBook(UserDict):
     def remove_record(self, contact: str):
         return self.data.pop(contact)
 
+    def show_phone(self, contact: str):
+        return self.data.get(contact).show_phones()
+
     def iterator(self, page):
         start = 0
         while True:
@@ -217,11 +196,17 @@ class AddressBook(UserDict):
         for contact in self.data.values():
             output += str(contact)
         output += f"Total: {len(self.data)} contacts."
-        return output if output else "Phonebook is empty"
+        return output
 
     def search(self, pattern: str) -> list:
         found_recs = []
-        for contact in self.data.values():
-            if pattern in str(contact):
-                found_recs.append(contact)
+        if pattern.isnumeric():
+            for contact in self.data.values():
+                for phone in contact.phones:
+                    if re.match(pattern, phone.value):
+                        found_recs.append(contact)
+        else:
+            for contact in self.data.values():
+                if re.match(pattern, contact.name.value, flags=re.IGNORECASE):
+                    found_recs.append(contact)
         return found_recs

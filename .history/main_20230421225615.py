@@ -16,13 +16,13 @@ def input_error(func):
             return result
 
         except TypeError as err:
-            if func.__name__ == "add" or func.__name__ == "change":
-                message = "Give me name and phone please. Minimum phone number length is {} digits. Maximum {}.Letters not allowed!"
-                return message.format(Phone.min_len, Phone.max_len)
-            if func.__name__ == "add_birthday":
-                return "input name and date"
-            if func.__name__ == "add_email":
-                return "input name and e-mail"
+            # if func.__name__ == "add" or func.__name__ == "change":
+            #     message = "Give me name and phone please. Minimum phone number length is {} digits. Maximum {}.Letters not allowed!"
+            #     return message.format(Phone.min_len, Phone.max_len)
+            # if func.__name__ == "add_birthday":
+            #     return "input name and date"
+            # if func.__name__ == "add_email":
+            #     return "input name and e-mail"
             return err
 
         except AttributeError:

@@ -31,7 +31,8 @@ class Name(Field):
             self.__value = value
         else:
             raise ValueError(
-                "Name cannot consist of only digits and min name length is 3."
+                "Name cannot consist of only \
+                            digits and min name length is 3."
             )
 
 
@@ -90,7 +91,8 @@ class Phone(Field):
             or not Phone.min_len <= len(new_phone) <= Phone.max_len
         ):
             raise ValueError(
-                f" Minimum phone number length is {Phone.min_len} digits. Maximum {Phone.max_len}.Letters not allowed!"
+                f"Give me name and phone please. Minimum phone number length is\
+                {Phone.min_len} digits. Maximum {Phone.max_len}.Letters not allowed!"
             )
         self.__value = new_phone
 
@@ -111,7 +113,7 @@ class Record:
         self.email = email
 
     def __str__(self):
-        line = "{}: Phones: {}; E-mail: {}; B-day: {} \n"
+        line = "{}: Phones: {}; E-mail:{}; B-day:{} \n"
         return line.format(
             self.name,
             ", ".join([str(phone) for phone in self.phones]),
@@ -120,7 +122,7 @@ class Record:
         )
 
     def __repr__(self):
-        line = "{}: Phones: {}; E-mail: {}; B-day: {} \n"
+        line = "{}: Phones: {}; E-mail:{}; B-day:{} \n"
         return line.format(
             self.name,
             ", ".join([str(phone) for phone in self.phones]),
@@ -143,10 +145,7 @@ class Record:
             return f"{days} days to birthday"
 
     def add_email(self, email: Email):
-        if not self.email:
-            self.email = email
-        else:
-            raise IndexError("E-mail already entered")
+        self.email = email
 
     def add_phone(self, phone: Phone):
         if phone in self.phones:
@@ -217,11 +216,17 @@ class AddressBook(UserDict):
         for contact in self.data.values():
             output += str(contact)
         output += f"Total: {len(self.data)} contacts."
-        return output if output else "Phonebook is empty"
+        return output
 
     def search(self, pattern: str) -> list:
         found_recs = []
-        for contact in self.data.values():
-            if pattern in str(contact):
-                found_recs.append(contact)
+        if pattern.isnumeric():
+            for contact in self.data.values():
+                for phone in contact.phones:
+                    if re.match(pattern, phone.value):
+                        found_recs.append(contact)
+        else:
+            for contact in self.data.values():
+                if re.match(pattern, contact.name.value, flags=re.IGNORECASE):
+                    found_recs.append(contact)
         return found_recs
